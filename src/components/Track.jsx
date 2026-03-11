@@ -22,10 +22,10 @@ function StreetLight({ position }) {
   );
 }
 
-function Building({ position, width, height, color }) {
+function Building({ position, width, height, color, highQuality }) {
   return (
     <group position={position}>
-      <mesh position={[0, height / 2, 0]} castShadow receiveShadow>
+      <mesh position={[0, height / 2, 0]} castShadow={highQuality} receiveShadow={highQuality}>
         <boxGeometry args={[width, height, width]} />
         <meshStandardMaterial color={color} roughness={0.6} />
       </mesh>
@@ -42,9 +42,16 @@ export default function Track() {
   const trackRef = useRef();
   const speed = useStore((state) => state.speed);
   const gameState = useStore((state) => state.gameState);
+  const performanceMode = useStore((state) => state.performanceMode);
+  const addDistance = useStore((state) => state.addDistance);
+  const recoverSpeed = useStore((state) => state.recoverSpeed);
 
   useFrame((state, delta) => {
     if (gameState !== 'playing') return;
+    
+    addDistance(speed * delta);
+    recoverSpeed(delta);
+    
     if (trackRef.current) {
       trackRef.current.position.z += speed * delta;
       if (trackRef.current.position.z > 100) {
@@ -76,17 +83,17 @@ export default function Track() {
         {[0, -100, -200].map((zOff) => (
           <group key={zOff} position={[0, 0, zOff]}>
             {/* Road */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow={performanceMode === 'high'}>
               <planeGeometry args={[14, 100]} />
               <meshStandardMaterial color="#1e293b" roughness={0.8} />
             </mesh>
             
             {/* Sidewalks */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-11, 0.05, 0]} receiveShadow>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-11, 0.05, 0]} receiveShadow={performanceMode === 'high'}>
               <planeGeometry args={[8, 100]} />
               <meshStandardMaterial color="#475569" />
             </mesh>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[11, 0.05, 0]} receiveShadow>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[11, 0.05, 0]} receiveShadow={performanceMode === 'high'}>
               <planeGeometry args={[8, 100]} />
               <meshStandardMaterial color="#475569" />
             </mesh>
@@ -94,9 +101,9 @@ export default function Track() {
             {/* City Lights & Buildings */}
             {cityProps.map((cp, idx) => {
               if (cp.type === 'light') return <StreetLight key={idx} position={cp.pos} />;
-              if (cp.type === 'building') return <Building key={idx} position={cp.pos} width={cp.w} height={cp.h} color="#334155" />;
+              if (cp.type === 'building') return <Building key={idx} position={cp.pos} width={cp.w} height={cp.h} color="#334155" highQuality={performanceMode === 'high'} />;
               if (cp.type === 'trash') return (
-                <mesh key={idx} position={[cp.pos[0], 0.6, cp.pos[2]]} castShadow>
+                <mesh key={idx} position={[cp.pos[0], 0.6, cp.pos[2]]} castShadow={performanceMode === 'high'}>
                    <cylinderGeometry args={[0.5, 0.5, 1.2, 8]} />
                    <meshStandardMaterial color="#1e293b" />
                 </mesh>
