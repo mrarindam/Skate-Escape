@@ -38,18 +38,15 @@ export default function UI() {
         <div className="touch-controls">
           <div 
             className="touch-layer left" 
-            onTouchStart={(e) => { e.preventDefault(); moveLeft(); }} 
-            onPointerDown={moveLeft} 
+            onPointerDown={(e) => { e.preventDefault(); moveLeft(); }} 
           />
           <div 
             className="touch-layer right" 
-            onTouchStart={(e) => { e.preventDefault(); moveRight(); }} 
-            onPointerDown={moveRight} 
+            onPointerDown={(e) => { e.preventDefault(); moveRight(); }} 
           />
           <div 
             className="jump-layer"
-            onTouchStart={(e) => { e.preventDefault(); jump(); window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })); }} 
-            onPointerDown={() => { jump(); window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })); }}
+            onPointerDown={(e) => { e.preventDefault(); jump(); window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })); }}
           />
         </div>
       )}

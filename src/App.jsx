@@ -21,10 +21,17 @@ function CameraSystem() {
     const player = state.scene.getObjectByName('player');
     if (!player) return;
 
-    // Follow Logic
-    const targetPos = new THREE.Vector3(player.position.x * 0.8, 6, player.position.z + 7);
+    const isMobile = window.innerWidth < 768;
+
+    // Follow Logic. On mobile, pull the camera further back and slightly higher
+    const followZ = isMobile ? player.position.z + 10 : player.position.z + 7;
+    const followY = isMobile ? 8 : 6;
+    const targetPos = new THREE.Vector3(player.position.x * 0.8, followY, followZ);
     state.camera.position.lerp(targetPos, 0.1);
-    state.camera.lookAt(player.position.x * 0.5, 2, player.position.z - 5);
+    
+    // Look slightly further ahead on mobile to compensate for height
+    const lookZ = isMobile ? player.position.z - 8 : player.position.z - 5;
+    state.camera.lookAt(player.position.x * 0.5, 2, lookZ);
 
     // Dynamic Tilt (Lane Change)
     const tilt = -player.position.x * 0.05;
@@ -52,11 +59,15 @@ function CameraSystem() {
 
 function App() {
   const performanceMode = useStore((state) => state.performanceMode);
+  
+  // Base FOV calculation. Widen FOV on narrow screens so side lanes fit.
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const cameraFov = isMobile ? 85 : 60;
 
   return (
     <>
       <AudioSystem />
-      <Canvas shadows={performanceMode === 'high'} camera={{ position: [0, 6, 12], fov: 60 }}>
+      <Canvas shadows={performanceMode === 'high'} camera={{ position: [0, 6, 12], fov: cameraFov }}>
         <PerformanceMonitor />
         <CameraSystem />
         {/* Sunny City Atmosphere */}
